@@ -52,4 +52,5 @@ Mkfile.old
 dkms.conf
 
 #utils
+occ
 nv-lex

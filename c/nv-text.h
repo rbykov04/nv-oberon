@@ -5,7 +5,7 @@
  * Copyright (C) Ruslan Bykov rbykov04@gmail.com 2020
  *
  */
-#ifndef  NV_TEXT_H
+#ifndef NV_TEXT_H
 #define NV_TEXT_H
 
 typedef struct {

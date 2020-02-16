@@ -23,21 +23,6 @@ typedef struct {
 
 nv_compiler_t *nv_compilerInit(const char *text);
 
-enum {
-	LEX_IDENT 	= 0,
-	LEX_LITERAL = 2,
-	LEX_LPAREN 	= 3,
-	LEX_LBRAK 	= 4,
-	LEX_LBRACE 	= 5,
-	LEX_BAR 	= 6,
-	LEX_EQL 	= 7,
-	LEX_RPAREN 	= 8,
-	LEX_RBRAK 	= 9,
-	LEX_RBRACE 	= 10,
-	LEX_PERIOD 	= 11,
-	LEX_OTHER 	= 12
-};
-
 void nv_compile(const char *s);
 
 #endif //NV_COMPILER_H

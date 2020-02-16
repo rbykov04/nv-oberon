@@ -35,7 +35,7 @@ int nv_getSym(nv_compiler_t *cmpl){
 			cmpl->id[i] = 0;
 		break;
 		case '"':
-			cmpl->sym = LEX_LITERAL;
+			cmpl->sym = LEX_LITERA;
 			nv_Texts.read(cmpl->R, &cmpl->ch);
 			while(cmpl->ch >= ' ' && cmpl->ch != '"' && i < IDLEN){
 				cmpl->id[i] = cmpl->ch;
