@@ -28,9 +28,9 @@ int nv_factor(nv_compiler_t *cmpl){
 		case LEX_IDENT: 
 			nv_record(T0, cmpl->id, 1);
 		break;
-		case LEX_LITERA: 
-			nv_record(T1, cmpl->id, 0);
-		break;
+		// case LEX_LITERA: 
+		// 	nv_record(T1, cmpl->id, 0);
+		// break;
 		case LEX_LPAREN:
 			nv_getSym(cmpl);
 			nv_expression(cmpl);
@@ -45,10 +45,10 @@ int nv_factor(nv_compiler_t *cmpl){
 				nv_error(cmpl, 3);
 			}
 		break;
-		case LEX_LBRACE:
+		case LEX_BEGIN:
 			nv_getSym(cmpl);
 			nv_expression(cmpl);
-			if (cmpl->sym != LEX_RBRACE){
+			if (cmpl->sym != LEX_END){
 				nv_error(cmpl, 4);
 			}
 		break;
@@ -62,12 +62,12 @@ int nv_factor(nv_compiler_t *cmpl){
 int nv_term(nv_compiler_t *cmpl){
 	do {
 		nv_factor(cmpl);
-	}while(cmpl->sym < LEX_BAR);
+	}while(cmpl->sym < LEX_AND);
 	return 0;
 }
 int nv_expression(nv_compiler_t *cmpl){
 	nv_term(cmpl);
-	while(cmpl->sym == LEX_BAR){
+	while(cmpl->sym == LEX_AND){
 		nv_getSym(cmpl);
 		nv_term(cmpl);
 	}
