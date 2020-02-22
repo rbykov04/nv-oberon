@@ -14,6 +14,7 @@
 typedef char Identifier[IDLEN+1];
 
 typedef struct {
+	const char *current_filename;
 	nv_reader_t *R;
 	int sym;
 	char ch;
@@ -24,8 +25,8 @@ typedef struct {
 	int val;
 } nv_compiler_t;
 
-nv_compiler_t *nv_compilerInit(const char *text);
+nv_compiler_t *nv_compilerInit(const char *filename, const char *text);
 
-void nv_compile(const char *s);
+void nv_compile(const char *filename, const char *s);
 
 #endif //NV_COMPILER_H

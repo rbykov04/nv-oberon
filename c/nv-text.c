@@ -23,6 +23,11 @@ int nv_textRead(nv_reader_t *r, char *ch){
 	}
 	*ch = *r->str;
 	r->str++;
+	if (*r->str == '\n'){
+		r->line++;
+		r->start_line = r->str + 1;
+		r->pos = 0;
+	}
 	r->pos++;
 	if (r->str == r->end){
 		r->eot = 1;
@@ -30,11 +35,15 @@ int nv_textRead(nv_reader_t *r, char *ch){
 	return 0;
 }
 
+size_t nv_textLine(nv_reader_t *r){
+	return r->line;
+}
 size_t nv_textPos(nv_reader_t *r){
 	return r->pos;
 }
 
 nv_texts_t nv_Texts = {
 	.read=nv_textRead,
-	.pos=nv_textPos
+	.pos=nv_textPos,
+	.line=nv_textLine
 };
