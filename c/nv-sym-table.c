@@ -19,7 +19,7 @@ int nv_object_copy(nv_object_t* to, const nv_object_t* from){
 	return 0;
 }
 
-nv_sym_table_t nv_symTable = {
+nv_sym_table_t nv_SymTable = {
 	.new = nv_symTableInit,
 	.insert = nv_symTableNew,
 	.delete = nv_symTableFree

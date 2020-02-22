@@ -31,5 +31,5 @@ typedef struct {
 	nv_object_t* (*insert)(nv_compiler_t *cmplr, void *table, const nv_object_t* obj);
 } nv_sym_table_t;
 
-extern nv_sym_table_t nv_symTable;
+extern nv_sym_table_t nv_SymTable;
 #endif //N_SYM_TABLE_H
