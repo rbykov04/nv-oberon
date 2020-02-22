@@ -20,6 +20,8 @@ nv_compiler_t *nv_compilerInit(const char *text){
 	nv_readerInit(&r, text);
 	cmpl.R = &r;\
 	cmpl.lastpos = 0;
+	cmpl.errpos = 0;
+	cmpl.error = 0;
 	return &cmpl;
 }
 

@@ -9,21 +9,11 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+#include <limits.h>
 
 #include "nv-lex.h"
 #include "nv-error.h"
-int nv_mark(nv_compiler_t *cmpl, const char *text){
 
-}
-int nv_comment(nv_compiler_t *cmpl){
-
-}
-int nv_ident(nv_compiler_t *cmpl){
-
-}
-int nv_number(nv_compiler_t *cmpl){
-
-}
 
 nv_keytab_t oberon_keywords[] = {
 	{"BY", LEX_NULL},
@@ -59,6 +49,77 @@ nv_keytab_t oberon_keywords[] = {
 	{"MODULE", LEX_MODULE},
 	{NULL, LEX_NULL},
 };
+int nv_find_lex(const char *test){
+	int i =0;
+	while(oberon_keywords[i].name){
+		if (!strcmp(test, oberon_keywords[i].name)){
+			break;
+		}
+	}
+	return oberon_keywords[i].id;
+}
+int nv_comment(nv_compiler_t *cmpl){
+	while(1) {
+		while(1) {
+			while (cmpl->ch == '('){
+				nv_Texts.read(cmpl->R, &cmpl->ch);
+				if (cmpl->ch == '*'){
+					nv_comment(cmpl);
+				}
+			}
+			if (cmpl->ch  == '*'){
+				nv_Texts.read(cmpl->R, &cmpl->ch);
+				break;
+			}
+			if (cmpl->R->eot){
+				break;
+			}
+			nv_Texts.read(cmpl->R, &cmpl->ch);
+		}
+		if (cmpl->ch  == ')'){
+			nv_Texts.read(cmpl->R, &cmpl->ch);
+			break;
+		}
+		if (cmpl->R->eot){
+			nv_mark(cmpl, "comment not end");
+			break;
+		}
+	};
+	return 0;
+}
+
+int nv_number(nv_compiler_t *cmpl){
+	cmpl->val = 0;
+	do{
+		int d = cmpl->ch - '0';
+		if ((INT_MAX - d)/10 > cmpl->val){
+			cmpl->val = cmpl->val* 10 + d;
+		}else{
+			nv_mark(cmpl, "number is very big");
+			cmpl->val = 0;
+		}
+		nv_Texts.read(cmpl->R, &cmpl->ch);
+	}while('0' <= cmpl->ch && cmpl->ch <='9' && !cmpl->R->eot);
+	return 0;
+}
+int nv_ident(nv_compiler_t *cmpl){
+	int i = 0;
+	do{
+		cmpl->id[i] = cmpl->ch;
+		i++;
+		nv_Texts.read(cmpl->R, &cmpl->ch);
+	}while(i < IDLEN && !cmpl->R->eot &&
+		   ('A' <= cmpl->ch && cmpl->ch <='Z')|| 
+		   ('a' <= cmpl->ch && cmpl->ch <='z')|| 
+		   ('0' <= cmpl->ch && cmpl->ch <='9')
+	);
+	cmpl->id[i] = 0;
+	cmpl->sym = nv_find_lex(cmpl->id);
+	if (cmpl->sym == LEX_NULL){
+		cmpl->sym = LEX_IDENT;
+	}
+	return 0;
+}
 int nv_getSym(nv_compiler_t *cmpl){
 	int i = 0;
 	while (!cmpl->R->eot && cmpl->ch <= ' ') nv_Texts.read(cmpl->R, &cmpl->ch);

@@ -18,7 +18,10 @@ typedef struct {
 	int sym;
 	char ch;
 	size_t lastpos;
+	size_t errpos;
+	int error;
 	Identifier id;
+	int val;
 } nv_compiler_t;
 
 nv_compiler_t *nv_compilerInit(const char *text);

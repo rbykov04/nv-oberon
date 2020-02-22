@@ -11,5 +11,5 @@
 #include "nv-compiler.h"
 
 void nv_error(nv_compiler_t *cmplr, int code);
-
+void nv_mark(nv_compiler_t *cmplr, const char *text);
 #endif //NV_ERROR_H
