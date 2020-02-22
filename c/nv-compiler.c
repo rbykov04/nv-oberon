@@ -20,6 +20,7 @@ nv_compiler_t *nv_compilerInit(const char *filename, const char *text){
 	static nv_reader_t r;
 	static nv_compiler_t cmpl;
 	nv_readerInit(&r, text);
+	cmpl.sym_table = nv_SymTable.new();
 	cmpl.R = &r;\
 	cmpl.lastpos = 0;
 	cmpl.errpos = 0;
