@@ -10,5 +10,8 @@
 int nv_term(nv_compiler_t *cmpl);
 int nv_expression(nv_compiler_t *cmpl);
 int nv_syntax(nv_compiler_t *cmpl);
+int nv_statSequence(nv_compiler_t *cmpl);
+int nv_type(nv_compiler_t *cmpl);
+int nv_declaration(nv_compiler_t *cmpl);
 
 #endif //NV_SYNTAX_H

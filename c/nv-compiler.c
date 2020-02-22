@@ -11,6 +11,7 @@
 #include <string.h>
 
 #include "nv-compiler.h"
+#include "nv-sym-table.h"
 #include "nv-lex.h"
 #include "nv-syntax.h"
 #include "nv-utils.h"

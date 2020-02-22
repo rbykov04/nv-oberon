@@ -24,41 +24,42 @@ void nv_record(int type, const char *id, int n){
 }
 
 int nv_factor(nv_compiler_t *cmpl){
-	switch (cmpl->sym){
-		case LEX_IDENT: 
-			nv_record(T0, cmpl->id, 1);
-		break;
-		// case LEX_LITERA: 
-		// 	nv_record(T1, cmpl->id, 0);
-		// break;
-		case LEX_LPAREN:
-			nv_getSym(cmpl);
-			nv_expression(cmpl);
-			if (cmpl->sym != LEX_RPAREN){
-				nv_error(cmpl, 2);
-			}
-		break;
-		case LEX_LBRAK:
-			nv_getSym(cmpl);
-			nv_expression(cmpl);
-			if (cmpl->sym != LEX_RBRAK){
-				nv_error(cmpl, 3);
-			}
-		break;
-		case LEX_BEGIN:
-			nv_getSym(cmpl);
-			nv_expression(cmpl);
-			if (cmpl->sym != LEX_END){
-				nv_error(cmpl, 4);
-			}
-		break;
-		default:
-			nv_error(cmpl, 5);
-			return -1;
+	if (cmpl->sym < LEX_LPAREN){
+		nv_mark(cmpl, "identificator?");
 	}
-	nv_getSym(cmpl);
+	do{
+		nv_getSym(cmpl);
+	}while(cmpl->sym >= LEX_LPAREN);
 	return 0;
 }
+int nv_statSequence(nv_compiler_t *cmpl){
+	if (cmpl->sym < LEX_IDENT){
+		nv_mark(cmpl, "operator?");
+		do{
+			nv_getSym(cmpl);
+		}while(cmpl->sym >= LEX_IDENT);
+	}
+	return 0;
+}
+int nv_type(nv_compiler_t *cmpl){
+	if (cmpl->sym !=LEX_IDENT && cmpl->sym >= LEX_CONST){
+		nv_mark(cmpl, "type?");
+		do{
+			nv_getSym(cmpl);
+		}while(cmpl->sym == LEX_IDENT || cmpl->sym >= LEX_ARRAY );
+	}
+	return 0;
+}
+int nv_declaration(nv_compiler_t *cmpl){
+	if (cmpl->sym < LEX_CONST){
+		nv_mark(cmpl, "declaration?");
+		do{
+			nv_getSym(cmpl);
+		}while(cmpl->sym >= LEX_CONST);
+	}
+	return 0;
+}
+
 int nv_term(nv_compiler_t *cmpl){
 	do {
 		nv_factor(cmpl);

@@ -7,6 +7,7 @@
  */
 #ifndef NV_COMPILER_H
 #define NV_COMPILER_H
+#include <string.h>
 
 #include "nv-text.h"
 
@@ -15,6 +16,7 @@ typedef char Identifier[IDLEN+1];
 
 typedef struct {
 	const char *current_filename;
+	void *sym_table;
 	nv_reader_t *R;
 	int sym;
 	char ch;
