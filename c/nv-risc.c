@@ -11,89 +11,18 @@
 
 #include "nv-risc.h"
 #include "nv-utils.h"
-int _mem[1024];
 
-
-const char * nv_risc_number(const char *pos, int *val){
-	int res = 0;
-	do{
-		int d = *pos - '0';
-		if ((INT_MAX - d)/10 > res){
-			res = res * 10 + d;
-		}else{
-			res = 0;
-		}
-		pos++;
-	}while('0' <= *pos&& *pos <='9' && *pos);
-	*val = res;
-	return pos;
-}
-
-const char *nv_risc_getSym(const char *pos, int *sym, int *val){
-	while(*pos <=' ' && *pos) pos++;
-	switch (*pos){
-		case '0'...'9':
-			*sym = RISC_VAL;
-			return nv_risc_number(pos, val);
-		break;
-		case 'W':
-			*sym = RISC_WRD;
-			pos+=3;
-		break;
-		case 'A':
-			*sym = RISC_ADD;
-			pos+=3;
-		break;
-		default: *sym = RISC_NULL; break; 
-	}
-	return pos;
-}	
-
-
-unsigned int nv_risc_code(int op, int a, int b, int c){
-	printf("r put %d %d %d %d", op, a, b, c);
-	unsigned int res = op;
-	res <<= 4;
-	res +=a;
-	res <<= 4;
-	res +=b;
-	res <<= 18;
-	res +=c % 0x40000;
-	return res;
-}
-int nv_ricsReadFile(const char *filename, unsigned int *mem, size_t len){
-	char *text = nv_readFile(filename);
-	if (!text){
-		return -1;
-	}
-	int i = 0;
-	const char *pos = text;
-	int op, a, b ,c;
-	int sym;
-	int v;
-	while(*pos){
-		pos = nv_risc_getSym(pos, &op, &v);
-		if (op == RISC_NULL){
-			break;
-		}
-		pos = nv_risc_getSym(pos, &sym, &a);
-		pos = nv_risc_getSym(pos, &sym, &b);
-		pos = nv_risc_getSym(pos, &sym, &c);
-		mem[i] = nv_risc_code(op, a,b,c);
-		++i;
-	} 
-
-	free(text);
-	return i;
+int nv_ash(int v, int n){
+	return v<<n;
 }
 int nv_risc_execute(nv_risc_t *risc, int start){
 	risc->R[14] = 0;
 	risc->R[15] = start + RISC_PROG_ORG;
-	unsigned int nxt = 0;
-	unsigned int opc = 0;
-	unsigned int a = 0;
-	unsigned int b = 0;
-	unsigned int c = 0;
+	int nxt = 0;
+	int opc = 0;
+	int a = 0;
+	int b = 0;
+	int c = 0;
 	while(1){
 		nxt = risc->R[15] + 4;
 		risc->IR = risc->M[risc->R[15]/4];
@@ -101,9 +30,79 @@ int nv_risc_execute(nv_risc_t *risc, int start){
 		a = (risc->IR >> 22) % 0x10;
 		b = (risc->IR >> 18) % 0x10;
 		c = risc->IR % 0x40000;
+
+		// if (opc < RISC_MOVI){ //F0
+		// 	c = risc->R[risc->IR%0x10];
+		// }else if (opc < RISC_BEQ){ //F1, F2
+		// 	c = risc->IR%0x40000;
+		// 	if (c >= 0x20000){
+		// 		c -= 0x40000;
+		// 	}
+		// } else {
+		// 	c = risc->IR%0x4000000;
+		// 	if (c >= 0x2000000){
+		// 		c -= 0x4000000;
+		// 	}
+		// }
 		switch(opc){
-			case RISC_WRD: printf("%u\n", risc->R[c]); break;
-			case RISC_ADD: risc->R[a] = risc->R[b] + c; break;
+			case RISC_MOVI:case RISC_MOV: risc->R[a] = nv_ash(c,b); break;
+			case RISC_ADDI:case RISC_ADD: risc->R[a] = risc->R[b] + c; break;
+			case RISC_SUBI:case RISC_SUB: risc->R[a] = risc->R[b] - c; break;
+			case RISC_MULI:case RISC_MUL: risc->R[a] = risc->R[b] * c; break;
+			case RISC_DIVI:case RISC_DIV: risc->R[a] = risc->R[b] / c; break;
+			case RISC_MODI:case RISC_MOD: risc->R[a] = risc->R[b] % c; break;
+			case RISC_CMPI:case RISC_CMP:
+				risc->Z = (risc->R[b] == c);
+				risc->N = (risc->R[b] < c); 
+			break;
+			case RISC_CHKI:
+				if(risc->R[a] < 0 || risc->R[a] >=c){
+					risc->R[a] = 0;
+				}
+			break;
+			case RISC_LDW: risc->R[a] = risc->M[(risc->R[b]+c)/4];	break;
+			case RISC_LDB: /*no impl*/ break;
+			case RISC_POP:
+				risc->R[a] = risc->M[risc->R[b] /4];
+				risc->R[b] += c;
+			break;
+			case RISC_STW:
+				risc->M[(risc->R[b]+c) /4] = risc->R[a];
+			break;
+			case RISC_STB:/*no impl*/break;
+			case RISC_PSH:
+				risc->R[b] -= c;
+				risc->M[risc->R[b] /4] = risc->R[a];
+			break;
+			case RISC_RD: scanf("%d", &risc->R[a]); break;
+			case RISC_WRD: printf(" %u\n", risc->R[c]); break;
+			case RISC_WRH: printf(" 0x%x\n", risc->R[c]); break;
+			case RISC_WRL: printf("\n"); break;
+			case RISC_BEQ: if (risc->Z){ nxt = risc->R[15] + c*4;} break;
+			case RISC_BNE: if (!risc->Z){nxt = risc->R[15] + c*4;} break;
+			case RISC_BLT: if (risc->N){ nxt = risc->R[15] + c*4;} break;
+			case RISC_BGE: if (!risc->N){ nxt = risc->R[15] + c*4;} break;
+			case RISC_BLE: 
+				if (risc->N || risc->Z){ 
+					nxt = risc->R[15] + c*4;
+				}
+			break;
+			case RISC_BGT: 
+				if (!risc->Z && !risc->N){ 
+					nxt = risc->R[15] + c*4;
+				}
+			break;
+			case RISC_BR: nxt = risc->R[15] + c*4; break;
+			case RISC_BSR: 
+				nxt = risc->R[15] + c*4;
+				risc->R[14] = risc->R[15]+4;
+			break;
+			case RISC_RET:
+				nxt = risc->R[c % 0x10];
+				if (nxt == 0){
+					return 0;
+				} 
+			break;
 			default: printf("error: unknow opc %u, IR = %u a =%u b=%u c=%u\n", opc, risc->IR, a, b, c); exit(1); break;
 		}
 		risc->R[15] = nxt;
@@ -112,7 +111,7 @@ int nv_risc_execute(nv_risc_t *risc, int start){
 	return 0;
 }
 
-int nv_risc_load(nv_risc_t *risc, unsigned int *code, size_t len){
+int nv_risc_load(nv_risc_t *risc, int *code, size_t len){
 	size_t i;
 	for (i=0; i< len; ++i){
 		risc->M[i + RISC_PROG_ORG/4] = code[i];

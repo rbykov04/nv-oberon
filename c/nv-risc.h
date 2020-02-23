@@ -53,13 +53,13 @@ enum{
 };
 typedef struct {
 	unsigned int IR;
-	unsigned int N;
-	unsigned int Z;
-	unsigned int R[16];
-	unsigned int M[RISC_MEM_SIZE/4];
+	int N;
+	int Z;
+	int R[16];
+	int M[RISC_MEM_SIZE/4];
 } nv_risc_t;
-int nv_ricsReadFile(const char *filename, unsigned int *mem, size_t len);
+int nv_ricsReadFile(const char *filename, int *mem, size_t len);
 int nv_risc_execute(nv_risc_t *risc, int start);
-int nv_risc_load(nv_risc_t *risc, unsigned int *code, size_t len);
+int nv_risc_load(nv_risc_t *risc, int *code, size_t len);
 
 #endif //NV_RISC_H

@@ -63,11 +63,6 @@ typedef struct {
 } nv_lexer_t;
 extern nv_lexer_t OSS;
 
-typedef struct {
-	const char *name;
-	int id;
-} nv_keytab_t;
-
 int nv_getSym(nv_compiler_t *cmpl);
 
 #endif //NV_LEX_H

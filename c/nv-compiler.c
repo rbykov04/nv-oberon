@@ -15,13 +15,14 @@
 #include "nv-syntax.h"
 #include "nv-utils.h"
 #include "nv-risc.h"
+#include "nv-risc-asm.h"
 
 nv_compiler_t *nv_compilerInit(const char *filename, const char *text){
 	static nv_reader_t r;
 	static nv_compiler_t cmpl;
 	nv_readerInit(&r, text);
 	cmpl.sym_table = nv_SymTable.new();
-	cmpl.R = &r;\
+	cmpl.R = &r;
 	cmpl.lastpos = 0;
 	cmpl.errpos = 0;
 	cmpl.error = 0;
@@ -58,7 +59,7 @@ int main(int argc, char *argv[]){
 	if (argv[1][0] == '-' && argv[1][1] == 'r' ){
 		nv_risc_t risc;
 		memset((void*)&risc, 0, sizeof(risc));
-		unsigned int test[1024];
+		int test[1024] = {};
 		int len = nv_ricsReadFile(argv[2], test, sizeof(test)/sizeof(int));
 		nv_risc_load(&risc, test, len);
 		nv_risc_execute(&risc, 0);

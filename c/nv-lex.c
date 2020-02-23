@@ -11,6 +11,7 @@
 #include <string.h>
 #include <limits.h>
 
+#include "nv-lex-key-table.h"
 #include "nv-lex.h"
 #include "nv-error.h"
 
@@ -49,15 +50,7 @@ nv_keytab_t oberon_keywords[] = {
 	{"MODULE", LEX_MODULE},
 	{NULL, LEX_NULL},
 };
-int nv_find_lex(const char *test){
-	int i =0;
-	while(oberon_keywords[i].name){
-		if (!strcmp(test, oberon_keywords[i].name)){
-			break;
-		}
-	}
-	return oberon_keywords[i].id;
-}
+
 int nv_comment(nv_compiler_t *cmpl){
 	while(1) {
 		while(1) {
@@ -114,7 +107,7 @@ int nv_ident(nv_compiler_t *cmpl){
 		   ('0' <= cmpl->ch && cmpl->ch <='9')
 	);
 	cmpl->id[i] = 0;
-	cmpl->sym = nv_find_lex(cmpl->id);
+	cmpl->sym = nv_find_lex(oberon_keywords, cmpl->id);
 	if (cmpl->sym == LEX_NULL){
 		cmpl->sym = LEX_IDENT;
 	}
