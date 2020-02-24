@@ -56,6 +56,7 @@ int main(int argc, char *argv[]){
 	if (argc < 2){
 		return 0;
 	}
+	nv_sym_table_init();
 	if (argv[1][0] == '-' && argv[1][1] == 'r' ){
 		nv_risc_t risc;
 		memset((void*)&risc, 0, sizeof(risc));

@@ -11,6 +11,7 @@
 
 int nv_readerInit(nv_reader_t *r, const char *text){
 	r->str = text;
+	r->start_line = text;
 	r->end = r->str + strlen(text) +1;
 	r->pos = 0;
 	r->eot = 0;

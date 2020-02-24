@@ -28,8 +28,24 @@ int nv_object_copy(nv_object_t* to, const nv_object_t* from);
 typedef struct {
 	void* (*new)();
 	void* (*delete)(void *table);
-	nv_object_t* (*insert)(nv_compiler_t *cmplr, void *table, const nv_object_t* obj);
+	void* (*insert)(nv_compiler_t *cmplr, void *table, const char *name, int class);
+	void* (*find)(void *table, const char *name);
+	int   (*is_end)(void *table, void* it);
 } nv_sym_table_t;
 
+typedef struct {
+	void* (*begin)(void *table);
+	void* (*end)(void *table);
+	void* (*next)(void *it);
+	void* (*release)(void *it);
+	nv_object_t* (*get)(void *table, void *index);
+	void* (*last)(void *table);
+
+	int (*is_equal)(void *l, void *r);
+} nv_sym_table_it_t;
+
 extern nv_sym_table_t nv_SymTable;
+extern nv_sym_table_it_t nv_SymTableIt;
+
+void nv_sym_table_init();
 #endif //N_SYM_TABLE_H
