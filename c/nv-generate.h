@@ -20,7 +20,7 @@ enum{
 	CLASS_SPROC = 7,
 	CLASS_REG = 8,
 	CLASS_COND = 9,
-
+	CLASS_ARRAY = 10,
 };
 
 extern nv_type_t nv_BoolType;

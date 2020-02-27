@@ -12,6 +12,7 @@
 #include <stdio.h>
 #include <fcntl.h>
 #include <unistd.h>
+#include <stdarg.h>
 
 #include "nv-utils.h"
 
@@ -34,4 +35,15 @@ char *nv_readFile(const char *filename){
 		buf[res + 1] = 0;
 	}
 	return buf;
+}
+
+const char *strf(const char *format, ...){
+	static char buf[8][256];
+	static int index = 0;
+	char *str = buf[index++ & 7];
+	va_list ap;
+	va_start(ap, format);
+	vsnprintf(str, sizeof buf[0], format, ap);
+	va_end(ap);
+	return str;
 }

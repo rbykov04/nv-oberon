@@ -9,5 +9,5 @@
 #define NV_UTILS_H
 
 char *nv_readFile(const char *filename);
-
+const char *strf(char const *format, ...);
 #endif //NV_UTILS_H

@@ -1,0 +1,3 @@
+TYPE T = ARRAY 2 OF BOOLEAN; 
+VAR a,b,c : INTEGER;
+	e : T;

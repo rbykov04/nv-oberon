@@ -93,6 +93,7 @@ int nv_number(nv_compiler_t *cmpl){
 		}
 		nv_Texts.read(cmpl->R, &cmpl->ch);
 	}while('0' <= cmpl->ch && cmpl->ch <='9' && !cmpl->R->eot);
+	cmpl->sym = LEX_NUMBER;
 	return 0;
 }
 int nv_ident(nv_compiler_t *cmpl){

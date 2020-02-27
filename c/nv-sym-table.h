@@ -10,8 +10,8 @@
 
 #include "nv-compiler.h"
 struct nv_type_;
-typedef struct {
-	int form;
+typedef struct nv_type_ {
+	int from;
 	int len;
 	void *fields;
 	struct nv_type_ *base;

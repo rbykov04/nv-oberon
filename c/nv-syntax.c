@@ -75,7 +75,7 @@ int nv_syntax_identList(nv_compiler_t *cmpl, int class, void **first){
 		nv_mark(cmpl, "identificator?");
 	}
 }
-int nv_syntax_type1(nv_compiler_t *cmpl, void *first, nv_type_t **type){
+int nv_syntax_type1(nv_compiler_t *cmpl, nv_type_t **type){
 	*type = NULL;
 	if (cmpl->sym == LEX_IDENT){
 		void *it = nv_SymTable.find(cmpl->sym_table, cmpl->id);
@@ -92,11 +92,38 @@ int nv_syntax_type1(nv_compiler_t *cmpl, void *first, nv_type_t **type){
 		nv_SymTableIt.release(it);
 		nv_getSym(cmpl);
 
+	}else if (cmpl->sym == LEX_ARRAY){
+		nv_getSym(cmpl);
+		nv_expression(cmpl);
+		int n = 0;
+		if (cmpl->sym == LEX_NUMBER){
+			n = cmpl->val;
+			nv_getSym(cmpl);
+		}else{
+			nv_mark(cmpl, "wait number");
+		}
+		nv_wait_sym(cmpl, LEX_OF);
+		nv_type_t *base_type;
+		nv_syntax_type1(cmpl, &base_type);
+		nv_type_t *t = calloc(1, sizeof(nv_type_t));
+		t->from = CLASS_ARRAY;
+		t->base = base_type;
+		t->len = n;
+		*type = t;
+		// type->size = n *
+
 	}else{
 		nv_mark(cmpl, "identificator?");
 	}
 }
-
+int nv_wait_sym(nv_compiler_t *cmpl, int sym){
+	if (cmpl->sym != sym){
+		nv_mark(cmpl, "Unexpected sym. wait %d.", sym);
+		return -1;
+	}
+	nv_getSym(cmpl);
+	return 0;
+}
 int nv_declaration(nv_compiler_t *cmpl){
 	if (cmpl->sym < LEX_CONST){
 		nv_mark(cmpl, "declaration?");
@@ -104,13 +131,24 @@ int nv_declaration(nv_compiler_t *cmpl){
 			nv_getSym(cmpl);
 		}while(cmpl->sym >= LEX_CONST);
 	}
-	if (cmpl->sym == LEX_VAR){
+	if (cmpl->sym == LEX_TYPE){
+		nv_getSym(cmpl);
+		while(cmpl->sym == LEX_IDENT){
+			void *it = nv_SymTable.insert(cmpl, cmpl->sym_table, cmpl->id, CLASS_TYPE);
+			nv_getSym(cmpl);
+			nv_wait_sym(cmpl, LEX_EQL);
+			nv_object_t *obj = nv_SymTableIt.get(cmpl->sym_table, it);
+					
+			nv_syntax_type1(cmpl, &(obj->type));
+			nv_wait_sym(cmpl, LEX_SEMICOLON);
+		}
+	}else if (cmpl->sym == LEX_VAR){
 		nv_getSym(cmpl);
 		while(cmpl->sym == LEX_IDENT){
 			void *first = NULL;
 			nv_syntax_identList(cmpl, CLASS_VAR, &first);
 			nv_type_t *type =NULL;
-			nv_syntax_type1(cmpl, first, &type);
+			nv_syntax_type1(cmpl, &type);
 			if (!first){
 				while(!nv_SymTable.is_end(cmpl->sym_table, first)){
 					nv_object_t *t = nv_SymTableIt.get(cmpl->sym_table, first);
@@ -119,6 +157,7 @@ int nv_declaration(nv_compiler_t *cmpl){
 				}
 				nv_SymTableIt.release(first);
 			}
+			nv_wait_sym(cmpl, LEX_SEMICOLON);
 		}
 
 	}
@@ -132,11 +171,11 @@ int nv_term(nv_compiler_t *cmpl){
 	return 0;
 }
 int nv_expression(nv_compiler_t *cmpl){
-	nv_term(cmpl);
-	while(cmpl->sym == LEX_AND){
-		nv_getSym(cmpl);
-		nv_term(cmpl);
-	}
+	// nv_term(cmpl);
+	// while(cmpl->sym == LEX_AND){
+	// 	nv_getSym(cmpl);
+	// 	nv_term(cmpl);
+	// }
 	return 0;
 }
 int nv_production(nv_compiler_t *cmpl){

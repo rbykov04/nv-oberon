@@ -13,5 +13,5 @@ int nv_syntax(nv_compiler_t *cmpl);
 int nv_statSequence(nv_compiler_t *cmpl);
 int nv_type(nv_compiler_t *cmpl);
 int nv_declaration(nv_compiler_t *cmpl);
-
+int nv_wait_sym(nv_compiler_t *cmpl, int sym);
 #endif //NV_SYNTAX_H
