@@ -10,9 +10,9 @@
 #include <limits.h>
 
 #include "nv-risc.h"
-#include "nv-lex-key-table.h"
 #include "nv-utils.h"
 
+#include "nv-risc-asm.h"
 
 nv_keytab_t nv_RiscCode[] ={
 	{"MOV", RISC_MOV},
@@ -99,7 +99,7 @@ const char *nv_risc_getSym(const char *pos, int *sym, int *val){
 
 
 int nv_risc_code(int op, int a, int b, int c){
-	printf("r put %d %d %d %d\n", op, a, b, c);
+	printf("%4s %4d %4d %4d\n", nv_find_lex_name(nv_RiscCode, op), a, b, c);
 	unsigned int res = (unsigned int)op;
 	res <<= 4;
 	res +=a;

@@ -61,5 +61,5 @@ typedef struct {
 int nv_ricsReadFile(const char *filename, int *mem, size_t len);
 int nv_risc_execute(nv_risc_t *risc, int start);
 int nv_risc_load(nv_risc_t *risc, int *code, size_t len);
-
+int nv_rics_put(int *mem, int op, int a, int b, int c);
 #endif //NV_RISC_H

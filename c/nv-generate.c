@@ -7,5 +7,10 @@
  */
 #include "nv-generate.h"
 
-nv_type_t nv_BoolType;
-nv_type_t nv_IntType;
+nv_type_t nv_BoolType ={
+	.size = 1
+};
+
+nv_type_t nv_IntType = {
+	.size = 2
+};

@@ -120,6 +120,7 @@ int nv_getSym(nv_compiler_t *cmpl){
 	switch (cmpl->ch){
 		case '&':	cmpl->sym = LEX_AND; nv_Texts.read(cmpl->R, &cmpl->ch); break;
 		case '*':	cmpl->sym = LEX_TIMES; nv_Texts.read(cmpl->R, &cmpl->ch); break;
+		case '/':	cmpl->sym = LEX_DIV; nv_Texts.read(cmpl->R, &cmpl->ch); break;
 		case '+':	cmpl->sym = LEX_PLUS; nv_Texts.read(cmpl->R, &cmpl->ch); break;
 		case '-':	cmpl->sym = LEX_MINUS; nv_Texts.read(cmpl->R, &cmpl->ch); break;
 		case '=':	cmpl->sym = LEX_EQL; nv_Texts.read(cmpl->R, &cmpl->ch); break;

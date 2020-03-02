@@ -18,3 +18,14 @@ int nv_find_lex(nv_keytab_t *table, const char *test){
 	}
 	return table[i].id;
 }
+const char *nv_find_lex_name(nv_keytab_t *table, int test){
+	int i =0;
+	while(table[i].name){
+		if (test == table[i].id){
+			break;
+		}
+		i++;
+	}
+	return table[i].name;
+}
+

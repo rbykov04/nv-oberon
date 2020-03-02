@@ -16,5 +16,6 @@ typedef struct {
 } nv_keytab_t;
 
 int nv_find_lex(nv_keytab_t *table, const char *test);
+const char *nv_find_lex_name(nv_keytab_t *table, int i);
 
 #endif //NV_LEX_KEY_TABLE_H

@@ -1,0 +1,11 @@
+VAR x,y,z,w, u : INTEGER;
+BEGIN
+	x:= 10;
+	y:= x + 10;
+	y:=10*10;
+	y:=10-10;
+	y:=10+10;
+	z:=y  +1;
+	w:=z  +1;
+	w:=z  +1;
+END

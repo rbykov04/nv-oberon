@@ -13,6 +13,7 @@ struct nv_type_;
 typedef struct nv_type_ {
 	int from;
 	int len;
+	size_t size;
 	void *fields;
 	struct nv_type_ *base;
 } nv_type_t;
