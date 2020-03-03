@@ -36,11 +36,11 @@ void nv_compile(const char *filename, const char *s){
 	}
 	nv_reader_t r;
 	nv_compiler_t *cmpl = nv_compilerInit(filename, s);
-	printf("\ntest: %s \nBEGIN\n", s);
+	//printf("\ntest: %s \nBEGIN\n", s);
 
 	nv_getSym(cmpl);
 	nv_syntax(cmpl);
-	printf("END\n");
+	//printf("END\n");
 }
 int nv_compile_file(const char *filename){
 	char *text = nv_readFile(filename);
@@ -57,14 +57,20 @@ int main(int argc, char *argv[]){
 		return 0;
 	}
 	nv_sym_table_init();
-	if (argv[1][0] == '-' && argv[1][1] == 'r' ){
-		nv_risc_t risc;
-		memset((void*)&risc, 0, sizeof(risc));
-		int test[1024] = {};
-		int len = nv_ricsReadFile(argv[2], test, sizeof(test)/sizeof(int));
-		nv_risc_load(&risc, test, len);
-		nv_risc_execute(&risc, 0);
-		return 0;
+	if (argv[1][0] == '-'){
+		if ( argv[1][1] == 'r' ){
+			nv_risc_t risc;
+			memset((void*)&risc, 0, sizeof(risc));
+			int test[1024] = {};
+			int len = nv_ricsReadFile(argv[2], test, sizeof(test)/sizeof(int));
+			nv_risc_load(&risc, test, len);
+			nv_risc_execute(&risc, 0);
+			return 0;
+		}else if ( argv[1][1] == 't' ){
+			int nv_console_loglevel = 0;
+			nv_compile_file(argv[2]);
+			return 0;
+		}
 	}
 	int i = 0;
 	for (i = 1; i< argc; ++i){

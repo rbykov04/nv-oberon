@@ -18,11 +18,10 @@
 int nv_ash(int v, int n){
 	return v<<n;
 }
-int risc_vm_debug;
 
 int nv_risc_execute(nv_risc_t *risc, int start){
 	risc->R[14] = 0;
-	risc_vm_debug = 1;
+	risc_vm_debug = 0;
 	risc->R[15] = start + RISC_PROG_ORG;
 	int nxt = 0;
 	int opc = 0;
@@ -59,7 +58,7 @@ int nv_risc_execute(nv_risc_t *risc, int start){
 				}
 			break;
 			case RISC_LDW:
-				//if (risc_vm_debug) printf("LDW addr = %d, c= %d get %d\n",(risc->R[b]+c) /4, c, risc->M[(risc->R[b]+c)/4]);
+				//if (risc_vm_debug) //printf("LDW addr = %d, c= %d get %d\n",(risc->R[b]+c) /4, c, risc->M[(risc->R[b]+c)/4]);
 				risc->R[a] = risc->M[(risc->R[b]+c)/4];	break;
 			case RISC_LDB: /*no impl*/ break;
 			case RISC_POP:
@@ -67,7 +66,7 @@ int nv_risc_execute(nv_risc_t *risc, int start){
 				risc->R[b] += c;
 			break;
 			case RISC_STW:
-				// if (risc_vm_debug) printf("STW addr = %d ,c =%d; IR=%d set %d\n",(risc->R[b]+c) /4, c, risc->IR, risc->R[a]);
+				// if (risc_vm_debug) //printf("STW addr = %d ,c =%d; IR=%d set %d\n",(risc->R[b]+c) /4, c, risc->IR, risc->R[a]);
 				risc->M[(risc->R[b]+c) /4] = risc->R[a];
 			break;
 			case RISC_STB:/*no impl*/break;
@@ -76,7 +75,7 @@ int nv_risc_execute(nv_risc_t *risc, int start){
 				risc->M[risc->R[b] /4] = risc->R[a];
 			break;
 			case RISC_RD: scanf("%d", &risc->R[a]); break;
-			case RISC_WRD: printf(" %u\n", risc->R[c]); break;
+			case RISC_WRD: printf(" %u", risc->R[c]); break;
 			case RISC_WRH: printf(" 0x%x\n", risc->R[c]); break;
 			case RISC_WRL: printf("\n"); break;
 			case RISC_BEQ: if (risc->Z){ nxt = risc->R[15] + c*4;} break;
@@ -106,7 +105,7 @@ int nv_risc_execute(nv_risc_t *risc, int start){
 					return 0;
 				} 
 			break;
-			default: printf("error: unknow opc %u, IR = %u a =%u b=%u c=%u\n", opc, risc->IR, a, b, c);
+			default: //printf("error: unknow opc %u, IR = %u a =%u b=%u c=%u\n", opc, risc->IR, a, b, c);
 				goto end__;
 			 break;
 		}
@@ -120,7 +119,7 @@ end__:
 int nv_risc_load(nv_risc_t *risc, int *code, size_t len){
 	size_t i;
 	for (i=0; i< len; ++i){
-		// printf("op %d\n", code[i]);
+		//printf("op %d\n", code[i]);
 		risc->M[i + RISC_PROG_ORG/4] = code[i];
 	}
 	return 0;

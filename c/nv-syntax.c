@@ -28,7 +28,7 @@ int mem_mem[4096];
 int cmd;
 int addr;
 void nv_record(int type, const char *id, int n){
-	printf("record %d %s %d\n", type, id, n);
+	//printf("record %d %s %d\n", type, id, n);
 }
 int nv_getReg(int *r){
 	regs++;
@@ -343,9 +343,31 @@ int nv_syntax_add_to_key_table(
 	obj->type = type;
 	free(it);
 }
+static int nv_writeln(nv_compiler_t *cmpl){
+	nv_wait_sym(cmpl, LEX_LPAREN);
+	nv_item_t x;
+	memset(&x, 0, sizeof(nv_item_t));
+	nv_expression(cmpl, &x);
+
+	if (x.mode != CLASS_REG){
+		nv_load(&x);
+	}
+	nv_rics_put(mem_mem+cmd, RISC_WRD, 0, 0, x.r);
+	cmd++;
+	nv_rics_put(mem_mem+cmd, RISC_WRL, 0, 0, 0);
+	cmd++;
+	nv_wait_sym(cmpl, LEX_RPAREN);
+	nv_wait_sym(cmpl, LEX_SEMICOLON);
+	return 0;
+}
 int nv_statement(nv_compiler_t *cmpl){
 	nv_item_t x, y;
 	while (cmpl->sym == LEX_IDENT){
+		if (!strcmp(cmpl->id, "writeln")){
+			nv_getSym(cmpl);
+			nv_writeln(cmpl);
+			continue;
+		}
 		void *it = nv_SymTable.find(cmpl->sym_table, cmpl->id);
 		if (nv_SymTable.is_end(cmpl->sym_table, it)){
 			nv_mark(cmpl, "variable %s undeclared", cmpl->id);
@@ -362,8 +384,6 @@ int nv_statement(nv_compiler_t *cmpl){
 				if (y.mode != CLASS_REG){
 					nv_load(&y);
 				}
-				nv_rics_put(mem_mem+cmd, RISC_WRD, 0, 0, y.r);
-				cmd++;
 				nv_rics_put(mem_mem+cmd, RISC_STW, y.r, 0, x.a);
 				cmd++;
 				regs--;
@@ -388,17 +408,17 @@ int nv_syntax(nv_compiler_t *cmpl){
 	int i = 0;
 	while(!nv_SymTable.is_end(cmpl->sym_table, it)){
 		nv_object_t *t = nv_SymTableIt.get(cmpl->sym_table, it);
-		printf("sym_table[%d]:%5d %s", i, t->class, t->name);
+		//printf("sym_table[%d]:%5d %s", i, t->class, t->name);
 		if (t->class == CLASS_VAR){
-			printf(" of type size =%ld; ", t->type->size);
-			printf("; addr = %d\n", t->val);
+			//printf(" of type size =%ld; ", t->type->size);
+			//printf("; addr = %d\n", t->val);
 		}else{
-			printf("\n");
+			//printf("\n");
 		}
 		it = nv_SymTableIt.next(it);
 		i++;
 	}
-	printf("addr =  %d\n********RUN*******\n", addr);
+	//printf("addr =  %d\n********RUN*******\n", addr);
 	nv_SymTableIt.release(it);
 	nv_risc_t risc;
 	memset((void*)&risc, 0, sizeof(risc));

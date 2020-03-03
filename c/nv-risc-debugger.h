@@ -18,5 +18,5 @@ int nv_risc_debugger_before(
 		int a,
 		int b,
 		int c);
-
+extern int risc_vm_debug;
 #endif //NV_RISC_DEBUGGER_H

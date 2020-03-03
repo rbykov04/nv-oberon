@@ -50,7 +50,8 @@ modules.order
 Module.symvers
 Mkfile.old
 dkms.conf
-
+#tags
+tags
 #utils
 occ
 nv-lex
