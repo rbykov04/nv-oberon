@@ -19,7 +19,10 @@ jobs:
     steps:
     # Checks-out your repository under $GITHUB_WORKSPACE, so your job can access it
     - uses: actions/checkout@v2
-
+      
+    - name: install ncurses
+      run: sudo apt-get install libncurses5-dev libncursesw5-dev
+      
     - name: build
       run: make
     
