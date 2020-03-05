@@ -41,7 +41,7 @@ int nv_vector_free(nv_vector_t* vec){
 int nv_vector_realloc(nv_vector_t* vec, int coef){
 	size_t size = (vec->end - vec->start) * sizeof (nv_object_t);
 	size_t cur = (vec->cur - vec->start)* sizeof (nv_object_t);
-	vec->start = reallocarray(vec, size *coef,  sizeof (nv_object_t));
+	vec->start = reallocarray((void *)vec, size * coef,  sizeof (nv_object_t));
 	vec->cur = vec->start + size;
 }
 

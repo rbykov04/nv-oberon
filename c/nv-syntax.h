@@ -24,5 +24,5 @@ int nv_statSequence(nv_compiler_t *cmpl);
 int nv_type(nv_compiler_t *cmpl);
 int nv_declaration(nv_compiler_t *cmpl);
 int nv_wait_sym(nv_compiler_t *cmpl, int sym);
-int nv_putOp(int cd, nv_item_t *x, nv_item_t *y);
+int nv_putOp(nv_compiler_t *cmpl, int cd, nv_item_t *x, nv_item_t *y);
 #endif //NV_SYNTAX_H

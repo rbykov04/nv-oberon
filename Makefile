@@ -3,7 +3,7 @@ SRC := $(wildcard c/*.c)
 
 .PHONY: cmpl clean tests
 cmpl:$(SRC)
-	gcc -I../c $(SRC) -o $(TARGET) -lncurses
+	gcc -D_GNU_SOURCE -I../c $(SRC) -o $(TARGET) -lncurses
 
 clean:
 	rm -f $(TARGET)

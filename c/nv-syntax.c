@@ -23,50 +23,46 @@
 enum {
 	T0 = 0, T1 =1
 };
-int regs;
-int mem_mem[4096];
-int cmd;
-int addr;
 void nv_record(int type, const char *id, int n){
 	//printf("record %d %s %d\n", type, id, n);
 }
-int nv_getReg(int *r){
-	regs++;
-	*r = regs;
+int nv_getReg(nv_compiler_t *cmpl, int *r){
+	cmpl->regs++;
+	*r = cmpl->regs;
 	return 0;
 }
-int nv_load(nv_item_t *x){
+int nv_load(nv_compiler_t *cmpl, nv_item_t *x){
 	if (x->mode == CLASS_VAR){
 		int r;
-		nv_getReg(&r);
-		nv_rics_put(mem_mem+cmd, RISC_LDW, r, x->r, x->a);
-		cmd++;
+		nv_getReg(cmpl, &r);
+		nv_rics_put(cmpl->mem_of_code+cmpl->cmd, RISC_LDW, r, x->r, x->a);
+		cmpl->cmd++;
 		x->r = r;
 	}else if (x->mode == CLASS_CONST){
 		if (x->a == 0){
 			x->r = 0;
 		}else{
-			nv_getReg(&x->r);
-			nv_rics_put(mem_mem+cmd, RISC_MOVI, x->r, 0,  x->a);
-			cmd++;
+			nv_getReg(cmpl, &x->r);
+			nv_rics_put(cmpl->mem_of_code+cmpl->cmd, RISC_MOVI, x->r, 0,  x->a);
+			cmpl->cmd++;
 		}
 	}
 	x->mode = CLASS_REG;
 	return 0;
 }
-int nv_op1(int op, nv_item_t *x){
+int nv_op1(nv_compiler_t *cmpl, int op, nv_item_t *x){
 	if(op == LEX_MINUS){
 		if (x->mode == CLASS_CONST ){
 			x->a += -x->a;
 		}else if (x->mode == CLASS_VAR ){
-			nv_load(x);
-			nv_rics_put(mem_mem+cmd, RISC_MVN, x->r, 0, x->r);
-			cmd++;
+			nv_load(cmpl, x);
+			nv_rics_put(cmpl->mem_of_code+cmpl->cmd, RISC_MVN, x->r, 0, x->r);
+			cmpl->cmd++;
 		}
 	}
 
 }
-int nv_op2(int op, nv_item_t *x, nv_item_t *y){
+int nv_op2(nv_compiler_t *cmpl, int op, nv_item_t *x, nv_item_t *y){
 	if (x->mode == CLASS_CONST && y->mode == CLASS_CONST){
 		if(op == LEX_PLUS){
 			x->a += y->a;
@@ -80,30 +76,30 @@ int nv_op2(int op, nv_item_t *x, nv_item_t *y){
 		return 0;
 	}else {
 		switch(op){
-			case LEX_PLUS: 	nv_putOp(RISC_ADD,x,y); break;
-			case LEX_MINUS:	nv_putOp(RISC_SUB,x,y); break;
-			case LEX_TIMES: nv_putOp(RISC_MUL,x,y); break;
-			case LEX_DIV: 	nv_putOp(RISC_DIV,x,y); break;
+			case LEX_PLUS: 	nv_putOp(cmpl, RISC_ADD,x,y); break;
+			case LEX_MINUS:	nv_putOp(cmpl, RISC_SUB,x,y); break;
+			case LEX_TIMES: nv_putOp(cmpl, RISC_MUL,x,y); break;
+			case LEX_DIV: 	nv_putOp(cmpl, RISC_DIV,x,y); break;
 			default: return -1;
 		}
 		return 0;
 	}
 
 }
-int nv_putOp(int cd, nv_item_t *x, nv_item_t *y){
+int nv_putOp(nv_compiler_t *cmpl, int cd, nv_item_t *x, nv_item_t *y){
 	if (x->mode != CLASS_REG){
-		nv_load(x);
+		nv_load(cmpl, x);
 	}
 	if (y->mode == CLASS_CONST){
-		nv_rics_put(mem_mem+cmd, cd + RISC_MOVI, x->r, x->r, y->a);
-		cmd++;
+		nv_rics_put(cmpl->mem_of_code+cmpl->cmd, cd + RISC_MOVI, x->r, x->r, y->a);
+		cmpl->cmd++;
 	}else{
 		if (x->mode != CLASS_REG){
-			nv_load(y);
+			nv_load(cmpl, y);
 		}
-		nv_rics_put(mem_mem+cmd, cd, x->r, x->r, y->r);
-		cmd++;
-		regs -= y->r;
+		nv_rics_put(cmpl->mem_of_code+cmpl->cmd, cd, x->r, x->r, y->r);
+		cmpl->cmd++;
+		cmpl->regs -= y->r;
 	}
 	return 0;
 }
@@ -253,8 +249,8 @@ int nv_declaration(nv_compiler_t *cmpl){
 					while(!nv_SymTable.is_end(cmpl->sym_table, first)){
 						nv_object_t *t = nv_SymTableIt.get(cmpl->sym_table, first);
 						t->type = type;
-						addr += type->size;
-						t->val = 0- addr;
+						cmpl->addr += type->size;
+						t->val = 0- cmpl->addr;
 						first = nv_SymTableIt.next(first);
 					}
 					nv_SymTableIt.release(first);
@@ -280,7 +276,7 @@ int nv_term(nv_compiler_t *cmpl, nv_item_t *x){
 		nv_item_t y;
 		nv_getSym(cmpl);
 		nv_factor(cmpl, &y);
-		nv_op2(op, x, &y);
+		nv_op2(cmpl, op, x, &y);
 	}
 	return 0;
 }
@@ -293,7 +289,7 @@ int nv_simple_expression(nv_compiler_t *cmpl, nv_item_t *x){
 	}else if (cmpl->sym == LEX_MINUS){
 		nv_getSym(cmpl);
 		nv_term(cmpl, x);
-		nv_op1(LEX_MINUS, x);
+		nv_op1(cmpl, LEX_MINUS, x);
 	}else{
 		nv_term(cmpl, x);
 	}
@@ -302,7 +298,7 @@ int nv_simple_expression(nv_compiler_t *cmpl, nv_item_t *x){
 		nv_item_t y;
 		nv_getSym(cmpl);
 		nv_term(cmpl, &y);
-		nv_op2(op, x, &y);
+		nv_op2(cmpl, op, x, &y);
 	}
 
 	return 0;
@@ -350,12 +346,12 @@ static int nv_writeln(nv_compiler_t *cmpl){
 	nv_expression(cmpl, &x);
 
 	if (x.mode != CLASS_REG){
-		nv_load(&x);
+		nv_load(cmpl, &x);
 	}
-	nv_rics_put(mem_mem+cmd, RISC_WRD, 0, 0, x.r);
-	cmd++;
-	nv_rics_put(mem_mem+cmd, RISC_WRL, 0, 0, 0);
-	cmd++;
+	nv_rics_put(cmpl->mem_of_code+cmpl->cmd, RISC_WRD, 0, 0, x.r);
+	cmpl->cmd++;
+	nv_rics_put(cmpl->mem_of_code+cmpl->cmd, RISC_WRL, 0, 0, 0);
+	cmpl->cmd++;
 	nv_wait_sym(cmpl, LEX_RPAREN);
 	nv_wait_sym(cmpl, LEX_SEMICOLON);
 	return 0;
@@ -382,11 +378,11 @@ int nv_statement(nv_compiler_t *cmpl){
 				nv_getSym(cmpl);
 				nv_expression(cmpl, &y);
 				if (y.mode != CLASS_REG){
-					nv_load(&y);
+					nv_load(cmpl, &y);
 				}
-				nv_rics_put(mem_mem+cmd, RISC_STW, y.r, 0, x.a);
-				cmd++;
-				regs--;
+				nv_rics_put(cmpl->mem_of_code+cmpl->cmd, RISC_STW, y.r, 0, x.a);
+				cmpl->cmd++;
+				cmpl->regs--;
 				nv_wait_sym(cmpl, LEX_SEMICOLON);
 			}
 		}
@@ -400,32 +396,8 @@ int nv_syntax(nv_compiler_t *cmpl){
 	nv_declaration(cmpl);
 	nv_wait_sym(cmpl, LEX_BEGIN);
 	nv_statement(cmpl);
-	nv_rics_put(mem_mem+cmd, RISC_RET, 0,0,0);
-	cmd++;
-
-
-	void *it = nv_SymTableIt.begin(cmpl->sym_table);
-	int i = 0;
-	while(!nv_SymTable.is_end(cmpl->sym_table, it)){
-		nv_object_t *t = nv_SymTableIt.get(cmpl->sym_table, it);
-		//printf("sym_table[%d]:%5d %s", i, t->class, t->name);
-		if (t->class == CLASS_VAR){
-			//printf(" of type size =%ld; ", t->type->size);
-			//printf("; addr = %d\n", t->val);
-		}else{
-			//printf("\n");
-		}
-		it = nv_SymTableIt.next(it);
-		i++;
-	}
-	//printf("addr =  %d\n********RUN*******\n", addr);
-	nv_SymTableIt.release(it);
-	nv_risc_t risc;
-	memset((void*)&risc, 0, sizeof(risc));
-	nv_risc_load(&risc, mem_mem, cmd);
-	nv_risc_execute(&risc, 0);
-	// while(cmpl->sym == LEX_IDENT){
-	// 	nv_production(cmpl);
-	// }
+	nv_rics_put(cmpl->mem_of_code+cmpl->cmd, RISC_RET, 0,0,0);
+	cmpl->cmd++;
 	return 0;
 }
+

@@ -1,0 +1,10 @@
+VAR x,y,z,w, u : INTEGER;
+BEGIN
+	x := 10;
+	writeln(x);
+	writeln(x+ 10);
+	writeln(x+20*2 - 3 );
+	writeln(x* 10);
+	writeln(x/ 10);
+	writeln(x- 9);
+END

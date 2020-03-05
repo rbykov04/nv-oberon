@@ -55,3 +55,6 @@ tags
 #utils
 occ
 nv-lex
+#vim
+*.swp
+*.swo

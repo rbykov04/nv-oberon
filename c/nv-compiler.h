@@ -25,9 +25,14 @@ typedef struct {
 	int error;
 	Identifier id;
 	int val;
+	int *mem_of_code;
+	size_t cmd;
+	size_t code_npos;
+	int regs;
+	int addr;
 } nv_compiler_t;
 
-nv_compiler_t *nv_compilerInit(const char *filename, const char *text);
+nv_compiler_t *nv_compilerInit(const char *filename, const char *text, int *code, size_t code_size);
 
 void nv_compile(const char *filename, const char *s);
 
