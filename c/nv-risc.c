@@ -21,7 +21,7 @@ int nv_ash(int v, int n){
 
 int nv_risc_execute(nv_risc_t *risc, int start){
 	risc->R[14] = 0;
-	risc_vm_debug = 0;
+	risc_vm_debug = 1;
 	risc->R[15] = start + RISC_PROG_ORG;
 	int nxt = 0;
 	int opc = 0;
@@ -119,13 +119,13 @@ end__:
 int nv_risc_code_to_asm(nv_writer_t *w, int *code, size_t len){
 	size_t i;
 	for (i=0; i< len; ++i){
-
-		int opc = code[i] >> 26;
-		int a = (code[i] >> 22) % 0x10;
-		int b = (code[i] >> 18) % 0x10;
-		int c = code[i] % 0x40000;
+		unsigned int IR = (unsigned int) code[i];
+		int opc = IR >> 26;
+		int a = (IR >> 22) % 0x10;
+		int b = (IR >> 18) % 0x10;
+		int c = IR % 0x40000;
 		const char *name = nv_find_lex_name(nv_RiscCode, opc);
-		nv_Texts.write(w, strf("%s%5d%5d%5d\n", name, a, b, c));
+		nv_Texts.write(w, strf("%4s%5d%5d%5d\n", name, a, b, c));
 
 	}
 	return 0;
