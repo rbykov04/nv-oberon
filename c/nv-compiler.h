@@ -34,6 +34,6 @@ typedef struct {
 
 nv_compiler_t *nv_compilerInit(const char *filename, const char *text, int *code, size_t code_size);
 
-void nv_compile(const char *filename, const char *s);
+int nv_compile(const char *filename, const char *s, int *code, size_t len);
 
 #endif //NV_COMPILER_H

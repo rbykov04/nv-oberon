@@ -1,7 +1,7 @@
 #!/bin/bash
 for filename in *.ob0; do
 	echo "[TEST     ]"$filename
-	../occ $filename>.test_result
+	../occ -t $filename>.test_result
 	if ! test -f $filename.etalon;
 	then
 		cp .test_result $filename.etalon;

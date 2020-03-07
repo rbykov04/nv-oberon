@@ -16,6 +16,14 @@
 
 #include "nv-utils.h"
 
+int nv_writeFile(const char *filename, nv_writer_t *w){
+	int fd = open(filename, O_CREAT | O_WRONLY, 0666);
+	if (fd == -1){
+		perror("open");
+		return -1;
+	}
+	return nv_Texts.appendTo(w, fd);
+}
 char *nv_readFile(const char *filename){
 	int fd = open(filename, O_RDONLY);
 	if (fd == -1){
@@ -34,6 +42,7 @@ char *nv_readFile(const char *filename){
 	}else{
 		buf[res + 1] = 0;
 	}
+	close(fd);
 	return buf;
 }
 
@@ -46,4 +55,26 @@ const char *strf(const char *format, ...){
 	vsnprintf(str, sizeof buf[0], format, ap);
 	va_end(ap);
 	return str;
+}
+
+const char *nv_changeSuffix(const char *filename, const char *new_suffix){
+	char prefix[100] = {0};
+
+	size_t j = 0;
+	size_t i = 0;
+	for (i = 0; filename[i] && filename[i] != '.'; ++i, ++j){
+		prefix[j] = filename[i];
+	}
+	while (filename[i]){
+		i++;
+		if (filename[i] == '.'){
+			while(i != j){
+				prefix[j] = filename[i];
+				j++;
+			}
+		}
+	}
+	
+	return strf("%s%s", prefix, new_suffix);
+
 }

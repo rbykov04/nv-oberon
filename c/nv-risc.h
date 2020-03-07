@@ -11,6 +11,9 @@
 
 #define RISC_MEM_SIZE 4096
 #define RISC_PROG_ORG 2048
+
+#include "nv-text.h"
+
 enum{
 	RISC_MOV = 0,
 	RISC_MVN = 1,
@@ -62,4 +65,5 @@ int nv_ricsReadFile(const char *filename, int *mem, size_t len);
 int nv_risc_execute(nv_risc_t *risc, int start);
 int nv_risc_load(nv_risc_t *risc, int *code, size_t len);
 int nv_rics_put(int *mem, int op, int a, int b, int c);
+int nv_risc_code_to_asm(nv_writer_t *w, int *code, size_t len);
 #endif //NV_RISC_H

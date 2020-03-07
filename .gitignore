@@ -53,6 +53,7 @@ dkms.conf
 #tags
 tags
 #utils
+test/compile/*.risc
 occ
 nv-lex
 #vim

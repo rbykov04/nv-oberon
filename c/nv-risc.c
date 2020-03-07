@@ -116,6 +116,20 @@ end__:
 	return 0;
 }
 
+int nv_risc_code_to_asm(nv_writer_t *w, int *code, size_t len){
+	size_t i;
+	for (i=0; i< len; ++i){
+
+		int opc = code[i] >> 26;
+		int a = (code[i] >> 22) % 0x10;
+		int b = (code[i] >> 18) % 0x10;
+		int c = code[i] % 0x40000;
+		const char *name = nv_find_lex_name(nv_RiscCode, opc);
+		nv_Texts.write(w, strf("%s%5d%5d%5d\n", name, a, b, c));
+
+	}
+	return 0;
+}
 int nv_risc_load(nv_risc_t *risc, int *code, size_t len){
 	size_t i;
 	for (i=0; i< len; ++i){

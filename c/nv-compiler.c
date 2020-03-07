@@ -1,4 +1,4 @@
-// SPDX-License-Identifier: GPL-3.0-or-later
+// PSDX-License-Identifier: GPL-3.0-or-later
 /* nv-compiler.c
  *
  *
@@ -6,6 +6,7 @@
  *
  */
 
+#include <unistd.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
@@ -35,59 +36,56 @@ nv_compiler_t *nv_compilerInit(const char *filename, const char *text, int *code
 	return &cmpl;
 }
 
-int nv_compile_and_run(nv_compiler_t *cmpl){
-	nv_syntax(cmpl);
 
+int nv_print_sym_table(nv_compiler_t *cmpl){
+	
 	void *it = nv_SymTableIt.begin(cmpl->sym_table);
 	int i = 0;
 	while(!nv_SymTable.is_end(cmpl->sym_table, it)){
 		nv_object_t *t = nv_SymTableIt.get(cmpl->sym_table, it);
-		//printf("sym_table[%d]:%5d %s", i, t->class, t->name);
+		printf("sym_table[%d]:%5d %s", i, t->class, t->name);
 		if (t->class == CLASS_VAR){
-			//printf(" of type size =%ld; ", t->type->size);
-			//printf("; addr = %d\n", t->val);
+			printf(" of type size =%ld; ", t->type->size);
+			printf("; addr = %d\n", t->val);
 		}else{
-			//printf("\n");
+			printf("\n");
 		}
 		it = nv_SymTableIt.next(it);
 		i++;
 	}
-	//printf("addr =  %d\n********RUN*******\n", addr);
 	nv_SymTableIt.release(it);
-	nv_risc_t risc;
-	memset((void*)&risc, 0, sizeof(risc));
-	nv_risc_load(&risc, cmpl->mem_of_code, cmpl->cmd);
-	nv_risc_execute(&risc, 0);
-	// while(cmpl->sym == LEX_IDENT){
-	// 	nv_production(cmpl);
-	// }
 	return 0;
 }
 
-void nv_compile(const char *filename, const char *s){
+int nv_compile(const char *filename, const char *s, int *code, size_t len){
 	if (!*s){
-		return;
+		return -1;
 	}
 	nv_reader_t r;
-	int code[1024];
-	memset(code, 0, sizeof(code));
-	nv_compiler_t *cmpl = nv_compilerInit(filename, s, code, 1024-1);
-	//printf("\ntest: %s \nBEGIN\n", s);
+	nv_compiler_t *cmpl = nv_compilerInit(filename, s, code, len);
 
 	nv_getSym(cmpl);
-	nv_compile_and_run(cmpl);
-	//printf("END\n");
+	nv_syntax(cmpl);
+//	nv_print_sym_table(cmpl);
+	return cmpl->cmd;
 }
-int nv_compile_file(const char *filename){
+
+int nv_compile_file(const char *filename, int *code, size_t len){
 	char *text = nv_readFile(filename);
 	if (!text){
 		return -1;
 	}
-	nv_compile(filename, text);
+	int count_cmd =	nv_compile(filename, text, code, len);
 	free(text);
-	return 0;
+	return count_cmd;
 }
-
+  
+int nv_risc_load_and_run(int *code, size_t len){
+	nv_risc_t risc;
+	memset((void*)&risc, 0, sizeof(risc));
+	nv_risc_load(&risc, code, len);
+	nv_risc_execute(&risc, 0);
+}
 int main(int argc, char *argv[]){
 	if (argc < 2){
 		return 0;
@@ -104,17 +102,29 @@ int main(int argc, char *argv[]){
 			return 0;
 		}else if ( argv[1][1] == 'a' ){
 			int nv_console_loglevel = 0;
-			nv_compile_file(argv[2]);
+			int code[1024];
+			memset(code, 0, sizeof(code));
+			nv_compile_file(argv[2], code, 1024 -1);
+			int count_code = nv_compile_file(argv[2], code, 1024 -1);
+			if (count_code < 0){
+				return -1;
+			}
+			nv_writer_t w;
+			char buf[1024] = {0};
+			nv_writerInit(&w, buf, 1024 - 1);
+			nv_risc_code_to_asm(&w, code, count_code);
+			nv_writeFile(nv_changeSuffix(argv[2],".risc"), &w);
 			return 0;
 		}else if ( argv[1][1] == 't' ){
+			int code[1024];
+			memset(code, 0, sizeof(code));
 			int nv_console_loglevel = 0;
-			nv_compile_file(argv[2]);
+			int count_code = nv_compile_file(argv[2], code, 1024 -1);
+			if (count_code > 0){
+				nv_risc_load_and_run(code, count_code);
+			}
 			return 0;
 		}
-	}
-	int i = 0;
-	for (i = 1; i< argc; ++i){
-		nv_compile_file(argv[i]);
 	}
 	return 0;
 }
