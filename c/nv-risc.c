@@ -21,7 +21,6 @@ int nv_ash(int v, int n){
 
 int nv_risc_execute(nv_risc_t *risc, int start){
 	risc->R[14] = 0;
-	risc_vm_debug = 1;
 	risc->R[15] = start + RISC_PROG_ORG;
 	int nxt = 0;
 	int opc = 0;

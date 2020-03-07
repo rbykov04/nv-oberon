@@ -17,6 +17,7 @@
 #include "nv-utils.h"
 #include "nv-risc.h"
 #include "nv-risc-asm.h"
+#include "nv-risc-debugger.h"
 
 nv_compiler_t *nv_compilerInit(const char *filename, const char *text, int *code, size_t code_size){
 	static nv_reader_t r;
@@ -118,7 +119,16 @@ int main(int argc, char *argv[]){
 		}else if ( argv[1][1] == 't' ){
 			int code[1024];
 			memset(code, 0, sizeof(code));
-			int nv_console_loglevel = 0;
+			risc_vm_debug = 0;
+			int count_code = nv_compile_file(argv[2], code, 1024 -1);
+			if (count_code > 0){
+				nv_risc_load_and_run(code, count_code);
+			}
+			return 0;
+		}else if ( argv[1][1] == 'd' ){
+			int code[1024];
+			memset(code, 0, sizeof(code));
+			risc_vm_debug = 1;
 			int count_code = nv_compile_file(argv[2], code, 1024 -1);
 			if (count_code > 0){
 				nv_risc_load_and_run(code, count_code);
