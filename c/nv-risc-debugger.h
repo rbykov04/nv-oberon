@@ -19,4 +19,5 @@ int nv_risc_debugger_before(
 		int b,
 		int c);
 extern int risc_vm_debug;
+int nv_risc_debugger_console(const char *text);
 #endif //NV_RISC_DEBUGGER_H

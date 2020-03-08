@@ -18,7 +18,13 @@
 int nv_ash(int v, int n){
 	return v<<n;
 }
-
+int nv_risc_console(const char *text){
+	if (risc_vm_debug) {
+		nv_risc_debugger_console(text);
+		return 0;
+	}
+	printf("%s",text);
+}
 int nv_risc_execute(nv_risc_t *risc, int start){
 	risc->R[14] = 0;
 	risc->R[15] = start + RISC_PROG_ORG;
@@ -74,9 +80,9 @@ int nv_risc_execute(nv_risc_t *risc, int start){
 				risc->M[risc->R[b] /4] = risc->R[a];
 			break;
 			case RISC_RD: scanf("%d", &risc->R[a]); break;
-			case RISC_WRD: printf(" %u", risc->R[c]); break;
-			case RISC_WRH: printf(" 0x%x\n", risc->R[c]); break;
-			case RISC_WRL: printf("\n"); break;
+			case RISC_WRD: nv_risc_console(strf(" %u", risc->R[c])); break;
+			case RISC_WRH: nv_risc_console(strf(" 0x%x\n", risc->R[c])); break;
+			case RISC_WRL: nv_risc_console(strf("\n")); break;
 			case RISC_BEQ: if (risc->Z){ nxt = risc->R[15] + c*4;} break;
 			case RISC_BNE: if (!risc->Z){nxt = risc->R[15] + c*4;} break;
 			case RISC_BLT: if (risc->N){ nxt = risc->R[15] + c*4;} break;
