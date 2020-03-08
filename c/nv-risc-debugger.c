@@ -15,6 +15,7 @@ typedef struct{
 	WINDOW *console;
 	WINDOW *commands;
 	WINDOW *registers;
+	WINDOW *mem;
 } nv_risc_debugger_t;
 
 static nv_risc_debugger_t deb;
@@ -29,9 +30,15 @@ int nv_risc_debugger_init(nv_risc_t *t){
 	if (!risc_vm_debug) return 0;
 	initscr();
 	deb.commands = create_newwin(30, 80, 0, 0); 
-	deb.console = create_newwin(10, 80, 31, 0); 
+	deb.console = create_newwin(10, 40, 31, 0); 
 	deb.registers = create_newwin(80, 80, 0, 91); 
+	deb.mem = create_newwin(80, 80, 40, 91); 
 
+	wrefresh(deb.registers);
+	wrefresh(deb.console);
+	wrefresh(deb.commands);
+	wrefresh(deb.mem);
+	refresh();
 	
 }
 
@@ -50,6 +57,10 @@ int nv_risc_debugger_resolve(nv_risc_t *t){
 		wrefresh(deb.registers);
 		delwin(deb.registers);
 	}
+	if (deb.mem){
+		wrefresh(deb.mem);
+		delwin(deb.mem);
+	}
     endwin();
 }
 
@@ -67,15 +78,21 @@ int nv_risc_debugger_before(
 	wprintw(deb.commands, "%s%5d%5d%5d\n",code, a, b, c);
 	wrefresh(deb.commands);
 	werase(deb.registers);
+	werase(deb.mem);
 	wprintw(deb.registers, "REG| value\n");
+	wprintw(deb.mem, "MEMORY\n");
 	int i = 0;
 	for (i=0; i<16; ++i){
 		wprintw(deb.registers, "%3d%5d\n",i, t->R[i]);
 	}
+	for (i = 0; i < 1024; ++i){
+		wprintw(deb.mem, "%4d %s",t->M[i], i%16? "": "\n");
+	}
 	wrefresh(deb.registers);
+	wrefresh(deb.mem);
 	refresh();
 	
-    //getch();
+    getch();
 }
 
 int nv_risc_debugger_console(const char *text){

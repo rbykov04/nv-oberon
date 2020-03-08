@@ -28,14 +28,16 @@ void nv_record(int type, const char *id, int n){
 }
 int nv_getReg(nv_compiler_t *cmpl, int *r){
 	cmpl->regs++;
-	*r = cmpl->regs;
+	*r = cmpl->regs+1;
 	return 0;
 }
 int nv_load(nv_compiler_t *cmpl, nv_item_t *x){
 	if (x->mode == CLASS_VAR){
 		int r;
 		nv_getReg(cmpl, &r);
-		nv_rics_put(cmpl->mem_of_code+cmpl->cmd, RISC_LDW, r, x->r, x->a);
+		nv_rics_put(cmpl->mem_of_code+cmpl->cmd, RISC_MOVI, r, 0,  0);
+		cmpl->cmd++;
+		nv_rics_put(cmpl->mem_of_code+cmpl->cmd, RISC_LDW, r, r, x->a);
 		cmpl->cmd++;
 		x->r = r;
 	}else if (x->mode == CLASS_CONST){
@@ -94,7 +96,7 @@ int nv_putOp(nv_compiler_t *cmpl, int cd, nv_item_t *x, nv_item_t *y){
 		nv_rics_put(cmpl->mem_of_code+cmpl->cmd, cd + RISC_MOVI, x->r, x->r, y->a);
 		cmpl->cmd++;
 	}else{
-		if (x->mode != CLASS_REG){
+		if (y->mode != CLASS_REG){
 			nv_load(cmpl, y);
 		}
 		nv_rics_put(cmpl->mem_of_code+cmpl->cmd, cd, x->r, x->r, y->r);

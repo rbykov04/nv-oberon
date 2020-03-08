@@ -1,4 +1,5 @@
 #!/bin/bash
+state=true
 for filename in *.ob0; do
 	echo "[TEST     ]"$filename
 	../occ -t $filename>.test_result
@@ -12,7 +13,11 @@ for filename in *.ob0; do
 	else 
 		diff .test_result $filename.etalon; 
 	 	echo '[     BAD ]'; 
+		state=false
 	fi;
 done
 rm .test_result || true
+if [ "$state" = false ] ; then
+	exit 1;
+fi
 
