@@ -9,6 +9,14 @@
 #define NV_GENERATE_H
 
 #include "nv-sym-table.h"
+
+typedef struct {
+	int mode;
+	nv_type_t *type;
+	int a;
+	int r;
+} nv_item_t; 
+
 enum{
 	CLASS_HEAD = 0,
 	CLASS_VAR = 1,
@@ -22,6 +30,8 @@ enum{
 	CLASS_COND = 9,
 	CLASS_ARRAY = 10,
 };
+
+int nv_make_item(nv_compiler_t *cmpl, nv_item_t *x, nv_object_t *y);
 
 extern nv_type_t nv_BoolType;
 extern nv_type_t nv_IntType;

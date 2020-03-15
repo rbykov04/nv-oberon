@@ -137,9 +137,7 @@ int nv_factor(nv_compiler_t *cmpl, nv_item_t *x){
 			nv_mark(cmpl, "variable %s undeclared", cmpl->id);
 		}else{
 			nv_object_t *obj = nv_SymTableIt.get(cmpl->sym_table, it);
-			x->mode = obj->class;
-			x->a =-obj->val;
-			x->r = 0;
+			nv_make_item(cmpl, x, obj);
 		}
 		nv_SymTableIt.release(it);
 		nv_getSym(cmpl);

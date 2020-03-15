@@ -10,13 +10,6 @@
 
 #include "nv-generate.h"
 
-typedef struct {
-	int mode;
-	nv_type_t *type;
-	int a;
-	int r;
-} nv_item_t; 
-
 int nv_term(nv_compiler_t *cmpl, nv_item_t *x);
 int nv_expression(nv_compiler_t *cmpl, nv_item_t *x);
 int nv_syntax(nv_compiler_t *cmpl);

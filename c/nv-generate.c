@@ -14,3 +14,13 @@ nv_type_t nv_BoolType ={
 nv_type_t nv_IntType = {
 	.size = 2
 };
+
+
+int nv_make_item(nv_compiler_t *cmpl, nv_item_t *x, nv_object_t *y){
+
+	x->mode = y->class;
+	x->type = y->type;
+	x->a =y->val;
+	x->r = 0;
+	return 0;
+}
