@@ -18,7 +18,7 @@
 #include "nv-risc.h"
 #include "nv-risc-asm.h"
 #include "nv-risc-debugger.h"
-
+int print_sym_table;
 nv_compiler_t *nv_compilerInit(const char *filename, const char *text, int *code, size_t code_size){
 	static nv_reader_t r;
 	static nv_compiler_t cmpl;
@@ -67,7 +67,9 @@ int nv_compile(const char *filename, const char *s, int *code, size_t len){
 
 	nv_getSym(cmpl);
 	nv_syntax(cmpl);
-//	nv_print_sym_table(cmpl);
+	if (print_sym_table){
+		nv_print_sym_table(cmpl);
+	}
 	return cmpl->cmd;
 }
 
@@ -86,55 +88,108 @@ int nv_risc_load_and_run(int *code, size_t len){
 	memset((void*)&risc, 0, sizeof(risc));
 	nv_risc_load(&risc, code, len);
 	nv_risc_execute(&risc, 0);
+	return 0;
 }
+typedef struct{
+	char short_name;
+	const char *name;
+	int is_set;
+} nv_opt_t;
+
+enum {
+	NV_OPT_DEBUG,
+	NV_OPT_RUN_RISC,
+	NV_OPT_ASM,
+	NV_OPT_RUN_AND_COMPILE,
+	NV_OPT_PRINT_SYM_TABLE,
+	NV_OPT_MAX
+};
+
+static nv_opt_t nv_Opts[] = {
+	[NV_OPT_DEBUG] = {.short_name='d', .name="debug"},
+	[NV_OPT_RUN_RISC] = {.short_name='r', .name="risc"},
+	[NV_OPT_ASM] = {.short_name='a', .name="asm"},
+	[NV_OPT_RUN_AND_COMPILE] = {.short_name='t', .name="run_and_com"},
+	[NV_OPT_PRINT_SYM_TABLE] = {.short_name='s', .name="symprint"},
+	[NV_OPT_MAX] = {.short_name='\0', .name=NULL}
+};
+int nv_opt_set_by_short(char c){
+	int i =0;
+	for (i =0; nv_Opts[i].name; ++i){
+		if (c == nv_Opts[i].short_name){
+			nv_Opts[i].is_set = 1;
+			return 0;
+		}
+	}
+	return -1;
+}
+int nv_parse_arguments(int argc, char *argv[]){
+	int i = 0;
+	for (i = 1; i<argc; ++i){
+		if (argv[i][0] == '-'){
+			int j = 0;
+			for (j=1; argv[i][j]; ++j){
+				if (nv_opt_set_by_short(argv[i][j])){
+						printf("-%c unknow option\n", argv[i][j]);
+				}
+			}
+		}else{
+			break;
+		}
+
+	}
+
+	return i;
+}
+
+
 int main(int argc, char *argv[]){
 	if (argc < 2){
 		return 0;
 	}
+	int last_arg = nv_parse_arguments(argc, argv);
+	if (last_arg >= argc){
+		printf("nothing to do, filename forgeted\n");
+		return -1;
+	}
 	nv_sym_table_init();
-	if (argv[1][0] == '-'){
-		if ( argv[1][1] == 'r' ){
-			nv_risc_t risc;
-			memset((void*)&risc, 0, sizeof(risc));
-			int test[1024] = {};
-			int len = nv_ricsReadFile(argv[2], test, sizeof(test)/sizeof(int));
-			nv_risc_load(&risc, test, len);
-			nv_risc_execute(&risc, 0);
-			return 0;
-		}else if ( argv[1][1] == 'a' ){
-			int nv_console_loglevel = 0;
-			int code[1024];
-			memset(code, 0, sizeof(code));
-			nv_compile_file(argv[2], code, 1024 -1);
-			int count_code = nv_compile_file(argv[2], code, 1024 -1);
-			if (count_code < 0){
-				return -1;
-			}
-			nv_writer_t w;
-			char buf[1024] = {0};
-			nv_writerInit(&w, buf, 1024 - 1);
-			nv_risc_code_to_asm(&w, code, count_code);
-			nv_writeFile(nv_changeSuffix(argv[2],".risc"), &w);
-			return 0;
-		}else if ( argv[1][1] == 't' ){
-			int code[1024];
-			memset(code, 0, sizeof(code));
-			risc_vm_debug = 0;
-			int count_code = nv_compile_file(argv[2], code, 1024 -1);
-			if (count_code > 0){
-				nv_risc_load_and_run(code, count_code);
-			}
-			return 0;
-		}else if ( argv[1][1] == 'd' ){
-			int code[1024];
-			memset(code, 0, sizeof(code));
-			risc_vm_debug = 1;
-			int count_code = nv_compile_file(argv[2], code, 1024 -1);
-			if (count_code > 0){
-				nv_risc_load_and_run(code, count_code);
-			}
-			return 0;
+	if ( nv_Opts[NV_OPT_DEBUG].is_set ){
+		risc_vm_debug = 1;
+	}
+	if ( nv_Opts[NV_OPT_PRINT_SYM_TABLE].is_set ){
+		print_sym_table = 1;
+	}
+	if ( nv_Opts[NV_OPT_RUN_RISC].is_set ){
+		nv_risc_t risc;
+		memset((void*)&risc, 0, sizeof(risc));
+		int test[1024] = {};
+		int len = nv_ricsReadFile(argv[last_arg], test, sizeof(test)/sizeof(int));
+		nv_risc_load(&risc, test, len);
+		nv_risc_execute(&risc, 0);
+		return 0;
+	}else if ( nv_Opts[NV_OPT_ASM].is_set ){
+		int nv_console_loglevel = 0;
+		int code[1024];
+		memset(code, 0, sizeof(code));
+		nv_compile_file(argv[2], code, 1024 -1);
+		int count_code = nv_compile_file(argv[2], code, 1024 -1);
+		if (count_code < 0){
+		return -1;
 		}
+		nv_writer_t w;
+		char buf[1024] = {0};
+		nv_writerInit(&w, buf, 1024 - 1);
+		nv_risc_code_to_asm(&w, code, count_code);
+		nv_writeFile(nv_changeSuffix(argv[2],".risc"), &w);
+		return 0;
+	}else if ( nv_Opts[NV_OPT_RUN_AND_COMPILE].is_set  ){
+		int code[1024];
+		memset(code, 0, sizeof(code));
+		int count_code = nv_compile_file(argv[2], code, 1024 -1);
+		if (count_code > 0){
+			nv_risc_load_and_run(code, count_code);
+		}
+		return 0;
 	}
 	return 0;
 }

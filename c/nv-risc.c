@@ -24,6 +24,7 @@ int nv_risc_console(const char *text){
 		return 0;
 	}
 	printf("%s",text);
+	return 0;
 }
 int nv_risc_execute(nv_risc_t *risc, int start){
 	risc->R[14] = 0;
