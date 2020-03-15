@@ -105,6 +105,31 @@ int nv_putOp(nv_compiler_t *cmpl, int cd, nv_item_t *x, nv_item_t *y){
 	}
 	return 0;
 }
+
+int nv_index(nv_compiler_t *cmpl, nv_item_t *x, nv_item_t *y){
+	return 0;
+}
+
+int nv_selector(nv_compiler_t *cmpl, nv_item_t *x){
+	nv_item_t y;
+	
+	while(cmpl->sym == LEX_LBRAK || cmpl->sym == LEX_PERIOD){
+		if (cmpl->sym == LEX_LBRAK){
+			nv_getSym(cmpl);
+			nv_expression(cmpl, &y);
+			if (x->type->from == CLASS_ARRAY){
+				nv_index(cmpl, x, &y);
+				nv_wait_sym(cmpl, LEX_RBRAK);
+			} else {
+				nv_mark(cmpl, "not array");
+			}
+
+		}
+	}
+
+
+	return 0;
+}
 int nv_factor(nv_compiler_t *cmpl, nv_item_t *x){
 	if (cmpl->sym == LEX_IDENT){
 		void *it = nv_SymTable.find(cmpl->sym_table, cmpl->id);
@@ -128,15 +153,6 @@ int nv_factor(nv_compiler_t *cmpl, nv_item_t *x){
 	// do{
 	// 	nv_getSym(cmpl);
 	// }while(cmpl->sym >= LEX_LPAREN);
-	return 0;
-}
-int nv_statSequence(nv_compiler_t *cmpl){
-	if (cmpl->sym < LEX_IDENT){
-		nv_mark(cmpl, "operator?");
-		do{
-			nv_getSym(cmpl);
-		}while(cmpl->sym >= LEX_IDENT);
-	}
 	return 0;
 }
 int nv_type(nv_compiler_t *cmpl){
@@ -340,6 +356,7 @@ int nv_syntax_add_to_key_table(
 	nv_object_t *obj = nv_SymTableIt.get(cmpl->sym_table, it);
 	obj->type = type;
 	free(it);
+	return 0;
 }
 static int nv_writeln(nv_compiler_t *cmpl){
 	nv_wait_sym(cmpl, LEX_LPAREN);
@@ -358,7 +375,8 @@ static int nv_writeln(nv_compiler_t *cmpl){
 	nv_wait_sym(cmpl, LEX_SEMICOLON);
 	return 0;
 }
-int nv_statement(nv_compiler_t *cmpl){
+
+int nv_statSequence(nv_compiler_t *cmpl){
 	nv_item_t x, y;
 	while (cmpl->sym == LEX_IDENT){
 		if (!strcmp(cmpl->id, "writeln")){
@@ -375,6 +393,7 @@ int nv_statement(nv_compiler_t *cmpl){
 			x.mode = obj->class;
 			x.a = -obj->val;
 			x.r = 0;
+			nv_selector(cmpl, &x);
 			if (cmpl->sym == LEX_BECOMES){
 
 				nv_getSym(cmpl);
@@ -390,14 +409,14 @@ int nv_statement(nv_compiler_t *cmpl){
 		}
 		nv_SymTableIt.release(it);
 	}
-
+	return 0;
 }
 int nv_syntax(nv_compiler_t *cmpl){
 	nv_syntax_add_to_key_table(cmpl, CLASS_TYPE, 1, "BOOLEAN", &nv_BoolType);
 	nv_syntax_add_to_key_table(cmpl, CLASS_TYPE, 2, "INTEGER", &nv_IntType);
 	nv_declaration(cmpl);
 	nv_wait_sym(cmpl, LEX_BEGIN);
-	nv_statement(cmpl);
+	nv_statSequence(cmpl);
 	nv_rics_put(cmpl->mem_of_code+cmpl->cmd, RISC_RET, 0,0,0);
 	cmpl->cmd++;
 	return 0;

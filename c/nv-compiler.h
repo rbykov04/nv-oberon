@@ -18,6 +18,7 @@ typedef struct {
 	const char *current_filename;
 	void *sym_table;
 	nv_reader_t *R;
+	//parser: current symbols
 	int sym;
 	char ch;
 	size_t lastpos;
