@@ -62,7 +62,7 @@ int nv_op1(nv_compiler_t *cmpl, int op, nv_item_t *x){
 			cmpl->cmd++;
 		}
 	}
-
+	return 0;
 }
 int nv_op2(nv_compiler_t *cmpl, int op, nv_item_t *x, nv_item_t *y){
 	if (x->mode == CLASS_CONST && y->mode == CLASS_CONST){
@@ -184,7 +184,9 @@ int nv_syntax_identList(nv_compiler_t *cmpl, int class, void **first){
 	}else{
 		nv_mark(cmpl, "identificator?");
 	}
+	return 0;
 }
+
 int nv_syntax_type1(nv_compiler_t *cmpl, nv_type_t **type){
 	*type = NULL;
 	if (cmpl->sym == LEX_IDENT){
@@ -225,6 +227,7 @@ int nv_syntax_type1(nv_compiler_t *cmpl, nv_type_t **type){
 	}else{
 		nv_mark(cmpl, "identificator?");
 	}
+	return 0;
 }
 int nv_wait_sym(nv_compiler_t *cmpl, int sym){
 	if (cmpl->sym != sym){
@@ -278,7 +281,7 @@ int nv_declaration(nv_compiler_t *cmpl){
 		if (cmpl->sym >= LEX_CONST && cmpl->sym <=LEX_VAR){
 			nv_mark(cmpl, "declaration?");
 		}else{
-			return 0;
+			break;
 		}
 	}
 	return 0;
