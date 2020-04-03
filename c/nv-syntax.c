@@ -105,8 +105,19 @@ int nv_putOp(nv_compiler_t *cmpl, int cd, nv_item_t *x, nv_item_t *y){
 	}
 	return 0;
 }
-
+// x = x[y]
 int nv_index(nv_compiler_t *cmpl, nv_item_t *x, nv_item_t *y){
+	nv_item_t z;
+	if (y->type != &nv_IntType){
+		nv_mark(cmpl, "index not int");
+	}
+	if (y->mode == CLASS_CONST){
+		if (y->a < 0 || y->a >= x->type->base->size){
+			nv_mark(cmpl, "out of range");
+		}
+		x->a += y->a * x->type->base->size;
+	}else{
+	}
 	return 0;
 }
 
@@ -121,7 +132,7 @@ int nv_selector(nv_compiler_t *cmpl, nv_item_t *x){
 				nv_index(cmpl, x, &y);
 				nv_wait_sym(cmpl, LEX_RBRAK);
 			} else {
-				nv_mark(cmpl, "not array");
+				nv_mark(cmpl, "not array.");
 			}
 
 		}
@@ -206,12 +217,14 @@ int nv_syntax_type1(nv_compiler_t *cmpl, nv_type_t **type){
 
 	}else if (cmpl->sym == LEX_ARRAY){
 		nv_getSym(cmpl);
-		// nv_expression(cmpl);
+	//	nv_item_t x;
+	//	nv_expression(cmpl, &x);
 		int n = 0;
 		if (cmpl->sym == LEX_NUMBER){
 			n = cmpl->val;
 			nv_getSym(cmpl);
 		}else{
+			n = 1;
 			nv_mark(cmpl, "wait number");
 		}
 		nv_wait_sym(cmpl, LEX_OF);
@@ -221,9 +234,8 @@ int nv_syntax_type1(nv_compiler_t *cmpl, nv_type_t **type){
 		t->from = CLASS_ARRAY;
 		t->base = base_type;
 		t->len = n;
+		t->size = t->len * t->base->size;
 		*type = t;
-		// type->size = n *
-
 	}else{
 		nv_mark(cmpl, "identificator?");
 	}
@@ -390,7 +402,7 @@ int nv_statSequence(nv_compiler_t *cmpl){
 			nv_mark(cmpl, "variable %s undeclared", cmpl->id);
 		}else{
 			nv_getSym(cmpl);
-			nv_object_t *obj  =nv_SymTableIt.get(cmpl->sym_table, it);
+			nv_object_t *obj = nv_SymTableIt.get(cmpl->sym_table, it);
 			x.mode = obj->class;
 			x.a = -obj->val;
 			x.r = 0;

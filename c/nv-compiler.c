@@ -38,6 +38,21 @@ nv_compiler_t *nv_compilerInit(const char *filename, const char *text, int *code
 }
 
 
+const char *nv_classtoa(int class){
+	switch(class){
+		case CLASS_HEAD :return "HEAD";
+		case CLASS_PAR:return "PAR";
+		case CLASS_CONST:return "CONS";
+		case CLASS_FLD :return "FLD";
+		case CLASS_TYPE :return "TYPE";
+		case CLASS_PROC :return "PROC";
+		case CLASS_SPROC :return "SPROC";
+		case CLASS_REG :return "REG";
+		case CLASS_COND :return "COND";
+		case CLASS_ARRAY:	return "ARRAY";
+	}
+	return "CLASS_UNKNOW";
+}
 int nv_print_sym_table(nv_compiler_t *cmpl){
 	
 	void *it = nv_SymTableIt.begin(cmpl->sym_table);
@@ -46,7 +61,7 @@ int nv_print_sym_table(nv_compiler_t *cmpl){
 		nv_object_t *t = nv_SymTableIt.get(cmpl->sym_table, it);
 		printf("sym_table[%d]:%5d %s", i, t->class, t->name);
 		if (t->class == CLASS_VAR){
-			printf(" of type size =%ld; ", t->type->size);
+			printf(" is var %s of type size =%ld; ",nv_classtoa(t->type->from), t->type->size);
 			printf("; addr = %d\n", t->val);
 		}else{
 			printf("\n");

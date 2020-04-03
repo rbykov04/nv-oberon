@@ -8,7 +8,7 @@
 #ifndef NV_TEXT_H
 #define NV_TEXT_H
 
-#include "nv-text.h"
+#include <stddef.h>
 
 typedef struct {
 	const char *str;
