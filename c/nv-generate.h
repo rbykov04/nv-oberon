@@ -33,6 +33,7 @@ enum{
 
 int nv_make_item(nv_compiler_t *cmpl, nv_item_t *x, nv_object_t *y);
 
+int nv_make_const_item(nv_compiler_t *cmpl, nv_item_t *x, nv_type_t  *type, int value);
 extern nv_type_t nv_BoolType;
 extern nv_type_t nv_IntType;
 #endif //NV_GENERATE_H

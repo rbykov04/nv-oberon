@@ -1,4 +1,3 @@
-// SPDX-License-Identifier: GPL-3.0-or-later
 /* nv-syntax.c
  *
  *
@@ -117,7 +116,11 @@ int nv_index(nv_compiler_t *cmpl, nv_item_t *x, nv_item_t *y){
 		}
 		x->a += y->a * x->type->base->size;
 	}else{
+		if (y->mode != CLASS_REG){
+			nv_load(cmpl, y);
+		}
 	}
+	x->type = x->type->base;
 	return 0;
 }
 
@@ -132,7 +135,7 @@ int nv_selector(nv_compiler_t *cmpl, nv_item_t *x){
 				nv_index(cmpl, x, &y);
 				nv_wait_sym(cmpl, LEX_RBRAK);
 			} else {
-				nv_mark(cmpl, "not array.");
+				nv_mark(cmpl, "not array %c", cmpl->ch);
 			}
 
 		}
@@ -144,17 +147,17 @@ int nv_selector(nv_compiler_t *cmpl, nv_item_t *x){
 int nv_factor(nv_compiler_t *cmpl, nv_item_t *x){
 	if (cmpl->sym == LEX_IDENT){
 		void *it = nv_SymTable.find(cmpl->sym_table, cmpl->id);
+		nv_getSym(cmpl);
 		if (nv_SymTable.is_end(cmpl->sym_table, it)){
 			nv_mark(cmpl, "variable %s undeclared", cmpl->id);
 		}else{
 			nv_object_t *obj = nv_SymTableIt.get(cmpl->sym_table, it);
 			nv_make_item(cmpl, x, obj);
+			nv_selector(cmpl, x);
 		}
 		nv_SymTableIt.release(it);
-		nv_getSym(cmpl);
 	}else if (cmpl->sym == LEX_NUMBER){
-		x->mode = CLASS_CONST;
-		x->a = cmpl->val;
+		nv_make_const_item(cmpl, x, &nv_IntType, cmpl->val);
 		nv_getSym(cmpl);
 	}else if (cmpl->sym < LEX_LPAREN){
 		nv_mark(cmpl, "identificator?");
@@ -403,9 +406,7 @@ int nv_statSequence(nv_compiler_t *cmpl){
 		}else{
 			nv_getSym(cmpl);
 			nv_object_t *obj = nv_SymTableIt.get(cmpl->sym_table, it);
-			x.mode = obj->class;
-			x.a = -obj->val;
-			x.r = 0;
+			nv_make_item(cmpl, &x, obj);
 			nv_selector(cmpl, &x);
 			if (cmpl->sym == LEX_BECOMES){
 
