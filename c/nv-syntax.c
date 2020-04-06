@@ -114,7 +114,7 @@ int nv_index(nv_compiler_t *cmpl, nv_item_t *x, nv_item_t *y){
 		if (y->a < 0 || y->a >= x->type->base->size){
 			nv_mark(cmpl, "out of range");
 		}
-		x->a += y->a * x->type->base->size;
+		x->a -= y->a * x->type->base->size;
 	}else{
 		if (y->mode != CLASS_REG){
 			nv_load(cmpl, y);
